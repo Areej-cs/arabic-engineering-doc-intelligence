@@ -1,0 +1,26 @@
+[project]
+name = "arabic-engineering-doc-intelligence"
+version = "0.1.0"
+description = "نظام ذكاء المستندات الهندسية العربية — OCR + NLP لاستخراج وتصنيف تقارير الصيانة والسلامة الصناعية"
+requires-python = ">=3.10"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "streamlit_app", "ml", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

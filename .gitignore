@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+aws_credentials*
+
+# Models & large artifacts (use S3 / DVC / LFS instead)
+models_store/*
+!models_store/.gitkeep
+*.bin
+*.safetensors
+*.pt
+*.onnx
+*.h5
+
+# Data (raw/processed docs may contain sensitive info)
+data/raw/*
+data/processed/*
+data/annotated/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/annotated/.gitkeep
+!data/samples/
+
+# Jupyter
+.ipynb_checkpoints/
+ml/notebooks/*.ipynb_checkpoints
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+infra/aws/terraform/.terraform/
+infra/aws/terraform/*.tfstate
+infra/aws/terraform/*.tfstate.backup
+infra/aws/terraform/.terraform.lock.hcl
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
