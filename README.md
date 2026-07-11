@@ -1,63 +1,74 @@
-# نظام ذكاء المستندات الهندسية العربية
-### Arabic Engineering Document Intelligence System
+# Arabic Engineering Document Intelligence System
 
-نظام OCR + NLP لقراءة تقارير الصيانة والسلامة الصناعية المكتوبة بالعربي،
-واستخراج المعلومات المهمة منها وتصنيفها تلقائيًا.
+An OCR + NLP system for reading Arabic industrial maintenance and safety reports, extracting
+the information they contain, and automatically classifying them by priority.
 
-> **حالة المشروع:** في مرحلة الإعداد الأولي (هيكل المجلدات فقط — لا يوجد كود فعلي بعد).
+Maintenance teams in Arabic-speaking industrial environments generate large volumes of
+scanned reports and photographed forms — equipment inspection notes, safety observations,
+incident logs — that are slow to review manually and hard to search or aggregate. This
+project turns those documents into structured, classified text: it reads mixed Arabic/English
+text out of scanned images and PDFs, then uses a fine-tuned Arabic language model to flag how
+urgent each report is (`Urgent` / `Normal` / `Low`), so teams can triage a backlog of reports
+without reading every one by hand.
 
----
+## Features
 
-## المكدس التقني (Tech Stack)
+- **OCR extraction** — pulls mixed Arabic/English text out of images and PDFs using
+  Tesseract, with image preprocessing (grayscale + adaptive thresholding) to improve accuracy
+  on scanned documents.
+- **Report classification** — classifies report text into `Urgent`, `Normal`, or `Low`
+  priority using a lightweight classification head trained on top of frozen AraBERT sentence
+  embeddings.
+- **API-ready structure** — the codebase is laid out around a FastAPI backend, a Streamlit
+  dashboard, and AWS-based storage/deployment, so OCR and classification can be exposed as
+  services as the project grows.
 
-| الطبقة | التقنية |
+## Tech Stack
+
+| Layer | Technology |
 |---|---|
 | API | FastAPI |
-| OCR | Tesseract / EasyOCR / (اختياريًا AWS Textract) |
-| NLP | AraBERT (aubmindlab/bert-base-arabertv2) |
-| لوحة التحكم | Streamlit |
-| قاعدة البيانات | PostgreSQL |
-| التخزين والبنية التحتية | AWS (S3, وغيرها لاحقًا) |
+| OCR | Tesseract (with optional AWS Textract / EasyOCR support) |
+| NLP | AraBERT (`aubmindlab/bert-base-arabertv02`) |
+| Dashboard | Streamlit |
+| Database | PostgreSQL |
+| Storage / Infrastructure | AWS (S3, etc.) |
 
----
-
-## هيكل المشروع
+## Project Structure
 
 ```
 arabic-engineering-doc-intelligence/
-├── src/app/                # كود التطبيق (FastAPI)
-│   ├── core/                # الإعدادات، اللوجينج، الأمان
-│   ├── api/v1/endpoints/    # مسارات الـ API
-│   ├── ocr/                 # محرك الـ OCR ومعالجة الصور
-│   ├── nlp/                 # AraBERT، التصنيف، استخراج المعلومات
+├── src/app/                # Application code (FastAPI)
+│   ├── core/                # Settings, logging, security
+│   ├── api/v1/endpoints/    # API routes
+│   ├── ocr/                 # OCR engine and image processing
+│   ├── nlp/                 # AraBERT classification and information extraction
 │   ├── models/               # Pydantic schemas + ORM models
-│   ├── services/              # منطق الأعمال (تنسيق OCR+NLP، S3، ...)
-│   ├── db/                    # جلسة قاعدة البيانات + migrations
-│   └── utils/                  # أدوات مساعدة
-├── streamlit_app/            # لوحة التحكم (واجهة المستخدم)
+│   ├── services/              # Business logic orchestrating OCR + NLP + S3
+│   ├── db/                    # Database session + migrations
+│   └── utils/                  # Shared utilities
+├── app/                       # Streamlit dashboard (user interface)
 │   ├── pages/
 │   ├── components/
 │   └── utils/
-├── ml/                        # تدريب وتقييم النماذج
+├── training/                   # Model training and evaluation
 │   ├── notebooks/
 │   ├── training/
 │   ├── data_prep/
 │   └── experiments/
-├── data/                      # البيانات (raw / processed / annotated / samples)
-├── models_store/              # أوزان النماذج المدرَّبة (لا تُرفع لـ git)
-├── infra/aws/                 # البنية التحتية (Terraform، سكربتات النشر)
-├── tests/                     # unit + integration tests
-├── docs/                       # التوثيق
-├── scripts/                    # سكربتات مساعدة عامة
+├── data/                      # Data (raw / processed / annotated / samples)
+├── saved_models/               # Trained model weights (not committed to git)
+├── deployment/aws/             # Infrastructure (Terraform, deployment scripts)
+├── tests/                     # Unit + integration tests
+├── docs/                       # Documentation
+├── scripts/                    # General-purpose helper scripts
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── pyproject.toml
 └── .env.example
 ```
 
----
-
-## الإعداد المحلي (لاحقًا عند بدء الكود)
+## Setup
 
 ```bash
 python -m venv venv
@@ -66,20 +77,29 @@ pip install -r requirements-dev.txt
 copy .env.example .env
 ```
 
----
+OCR requires a local Tesseract installation (with the Arabic `ara` language data) and Poppler
+(for PDF support). Set `TESSERACT_CMD`, `TESSDATA_PREFIX`, and `POPPLER_PATH` in `.env` if
+they aren't discoverable on your system `PATH`.
 
-## خطة العمل (على أيام منفصلة)
+Classification requires the AraBERT model weights. Point `ARABERT_MODEL_NAME` at the
+Hugging Face model ID (default `aubmindlab/bert-base-arabertv02`), or place a local copy of
+the model under `saved_models/arabertv02/` to avoid depending on network access.
 
-- [x] **اليوم 1:** هيكل المجلدات، requirements، pyproject.toml، README أولي
-- [ ] بناء FastAPI الأساسي (config, main, health check)
-- [ ] بناء محرك الـ OCR (معالجة الصور + استخراج النص العربي)
-- [ ] دمج AraBERT (تصنيف + استخراج معلومات NER)
-- [ ] بناء واجهة Streamlit
-- [ ] إعداد AWS (S3، النشر)
-- [ ] الاختبارات (tests) والـ CI/CD
+## Usage
 
----
+Extract text from a sample document:
 
-## الترخيص
+```bash
+python -m src.app.ocr.demo
+```
+
+Train the classification head on synthetic data and classify a sample report:
+
+```bash
+python -m src.app.nlp.train
+python -m src.app.nlp.demo
+```
+
+## License
 
 TBD

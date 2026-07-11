@@ -16,7 +16,7 @@ DEFAULT_LANG = "ara+eng"
 
 _DEFAULT_TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
-_DEFAULT_TESSDATA_DIR = _PROJECT_ROOT / "models_store" / "tessdata"
+_DEFAULT_TESSDATA_DIR = _PROJECT_ROOT / "saved_models" / "tessdata"
 
 _IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp"}
 _PDF_EXTENSIONS = {".pdf"}

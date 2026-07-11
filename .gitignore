@@ -22,8 +22,8 @@ ENV/
 aws_credentials*
 
 # Models & large artifacts (use S3 / DVC / LFS instead)
-models_store/*
-!models_store/.gitkeep
+saved_models/*
+!saved_models/.gitkeep
 *.bin
 *.safetensors
 *.pt
@@ -41,7 +41,7 @@ data/annotated/*
 
 # Jupyter
 .ipynb_checkpoints/
-ml/notebooks/*.ipynb_checkpoints
+training/notebooks/*.ipynb_checkpoints
 
 # Testing / coverage
 .pytest_cache/
@@ -55,15 +55,18 @@ htmlcov/
 .idea/
 *.swp
 
+# Claude Code (local settings/session state)
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db
 
 # Terraform
-infra/aws/terraform/.terraform/
-infra/aws/terraform/*.tfstate
-infra/aws/terraform/*.tfstate.backup
-infra/aws/terraform/.terraform.lock.hcl
+deployment/aws/terraform/.terraform/
+deployment/aws/terraform/*.tfstate
+deployment/aws/terraform/*.tfstate.backup
+deployment/aws/terraform/.terraform.lock.hcl
 
 # Logs
 *.log
