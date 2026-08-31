@@ -47,8 +47,9 @@ class ClassificationHead(nn.Module):
 def load_encoder() -> tuple[AutoTokenizer, AutoModel]:
     source = _model_source()
     logger.info("Loading AraBERT encoder from: {}", source)
-    tokenizer = AutoTokenizer.from_pretrained(source, local_files_only=source == str(_LOCAL_MODEL_DIR))
-    model = AutoModel.from_pretrained(source, local_files_only=source == str(_LOCAL_MODEL_DIR))
+    is_local = source == str(_LOCAL_MODEL_DIR)
+    tokenizer = AutoTokenizer.from_pretrained(source, local_files_only=is_local)
+    model = AutoModel.from_pretrained(source, local_files_only=is_local)
     model.to(_DEVICE)
     model.eval()
     for param in model.parameters():

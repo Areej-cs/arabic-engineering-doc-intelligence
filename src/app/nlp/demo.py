@@ -3,7 +3,6 @@
 import sys
 
 from loguru import logger
-
 from src.app.nlp.classifier import load_encoder, load_head, predict
 from src.app.ocr.extractor import extract_text
 from src.app.ocr.sample_generator import DEFAULT_SAMPLE_PATH, generate_sample_image

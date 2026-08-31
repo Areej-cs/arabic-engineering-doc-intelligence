@@ -19,9 +19,8 @@ without reading every one by hand.
 - **Report classification** — classifies report text into `Urgent`, `Normal`, or `Low`
   priority using a lightweight classification head trained on top of frozen AraBERT sentence
   embeddings.
-- **API-ready structure** — the codebase is laid out around a FastAPI backend, a Streamlit
-  dashboard, and AWS-based storage/deployment, so OCR and classification can be exposed as
-  services as the project grows.
+- **Interactive dashboard** — a single-page Streamlit app to upload a report and see its
+  extracted text and priority classification directly.
 
 ## Tech Stack
 
@@ -38,28 +37,16 @@ without reading every one by hand.
 
 ```
 arabic-engineering-doc-intelligence/
-├── src/app/                # Application code (FastAPI)
-│   ├── core/                # Settings, logging, security
-│   ├── api/v1/endpoints/    # API routes
+├── src/app/                # Application code
 │   ├── ocr/                 # OCR engine and image processing
 │   ├── nlp/                 # AraBERT classification and information extraction
-│   ├── models/               # Pydantic schemas + ORM models
-│   ├── services/              # Business logic orchestrating OCR + NLP + S3
-│   ├── db/                    # Database session + migrations
-│   └── utils/                  # Shared utilities
+│   └── utils/                # Shared utilities
 ├── app/                       # Streamlit dashboard (user interface)
-│   ├── pages/
-│   ├── components/
-│   └── utils/
-├── training/                   # Model training and evaluation
-│   ├── notebooks/
-│   ├── training/
-│   ├── data_prep/
-│   └── experiments/
+│   └── main.py
 ├── data/                      # Data (raw / processed / annotated / samples)
 ├── saved_models/               # Trained model weights (not committed to git)
 ├── deployment/aws/             # Infrastructure (Terraform, deployment scripts)
-├── tests/                     # Unit + integration tests
+├── tests/                     # Tests
 ├── docs/                       # Documentation
 ├── scripts/                    # General-purpose helper scripts
 ├── requirements.txt
@@ -100,6 +87,13 @@ python -m src.app.nlp.train
 python -m src.app.nlp.demo
 ```
 
+Launch the Streamlit dashboard to upload a document and see its extracted text and
+classification interactively:
+
+```bash
+streamlit run app/main.py
+```
+
 ## License
 
-TBD
+MIT — see [LICENSE](LICENSE).

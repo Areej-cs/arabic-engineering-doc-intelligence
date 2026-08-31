@@ -102,7 +102,7 @@ def generate_dataset(samples_per_label: int = 80, seed: int = 42) -> tuple[list[
                 texts.append(text)
                 labels.append(label)
 
-    combined = list(zip(texts, labels))
+    combined = list(zip(texts, labels, strict=True))
     rng.shuffle(combined)
-    texts, labels = zip(*combined)
+    texts, labels = zip(*combined, strict=True)
     return list(texts), list(labels)

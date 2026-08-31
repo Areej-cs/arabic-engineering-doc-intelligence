@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 from loguru import logger
-
 from src.app.ocr.extractor import extract_text
 from src.app.ocr.sample_generator import DEFAULT_SAMPLE_PATH, generate_sample_image
 

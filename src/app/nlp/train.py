@@ -2,8 +2,6 @@
 
 import torch
 from loguru import logger
-from torch import nn
-
 from src.app.nlp.classifier import (
     LABELS,
     ClassificationHead,
@@ -12,6 +10,7 @@ from src.app.nlp.classifier import (
     save_head,
 )
 from src.app.nlp.data_generator import generate_dataset
+from torch import nn
 
 
 def train_head(
