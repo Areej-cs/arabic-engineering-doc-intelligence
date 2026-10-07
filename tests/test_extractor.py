@@ -30,9 +30,7 @@ def test_extract_text_routes_images_to_image_extractor(tmp_path: Path) -> None:
     image_path = tmp_path / "sample.png"
     Image.new("RGB", (10, 10), color="white").save(image_path)
 
-    with patch(
-        "src.app.ocr.extractor.pytesseract.image_to_string", return_value="hello"
-    ) as mocked:
+    with patch("src.app.ocr.extractor.pytesseract.image_to_string", return_value="hello") as mocked:
         result = extract_text(image_path)
 
     mocked.assert_called_once()
@@ -43,9 +41,10 @@ def test_extract_text_from_image_skips_preprocessing_when_disabled(tmp_path: Pat
     image_path = tmp_path / "sample.png"
     Image.new("RGB", (10, 10), color="white").save(image_path)
 
-    with patch(
-        "src.app.ocr.extractor.pytesseract.image_to_string", return_value=""
-    ) as mocked, patch("src.app.ocr.extractor.cv2.cvtColor") as mocked_cvt:
+    with (
+        patch("src.app.ocr.extractor.pytesseract.image_to_string", return_value="") as mocked,
+        patch("src.app.ocr.extractor.cv2.cvtColor") as mocked_cvt,
+    ):
         extract_text_from_image(image_path, preprocess=False)
 
     mocked_cvt.assert_not_called()

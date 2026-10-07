@@ -5,11 +5,13 @@ import cv2
 import numpy as np
 import pytesseract
 from dotenv import load_dotenv
+from loguru import logger
 from PIL import Image
 
 load_dotenv()
 
 DEFAULT_LANG = "ara+eng"
+SUPPORTED_ENGINES = ("tesseract", "easyocr")
 
 _DEFAULT_TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -38,8 +40,34 @@ def _get_poppler_path() -> str | None:
     return os.getenv("POPPLER_PATH") or None
 
 
+def _default_engine() -> str:
+    return os.getenv("OCR_ENGINE", "tesseract").lower()
+
+
+_easyocr_reader = None
+
+
+def _easyocr_read(pil_image: Image.Image) -> str:
+    """EasyOCR as a second engine (optional, pip install -r requirements-optional.txt)."""
+    global _easyocr_reader
+    if _easyocr_reader is None:
+        try:
+            import easyocr
+        except ImportError as e:
+            raise RuntimeError(
+                "OCR_ENGINE=easyocr needs the optional dependency: "
+                "pip install -r requirements-optional.txt"
+            ) from e
+        _easyocr_reader = easyocr.Reader(["ar", "en"], gpu=False)
+    lines = _easyocr_reader.readtext(np.array(pil_image.convert("RGB")), detail=0, paragraph=True)
+    return "\n".join(lines)
+
+
 def extract_text_from_image(
-    image: str | Path | Image.Image, lang: str = DEFAULT_LANG, preprocess: bool = True
+    image: str | Path | Image.Image,
+    lang: str = DEFAULT_LANG,
+    preprocess: bool = True,
+    engine: str | None = None,
 ) -> str:
     if isinstance(image, str | Path):
         image_path = Path(image)
@@ -57,11 +85,20 @@ def extract_text_from_image(
         )
         pil_image = Image.fromarray(thresholded)
 
-    print(f"running OCR (lang={lang})")
+    engine = (engine or _default_engine()).lower()
+    if engine == "easyocr":
+        logger.debug("running OCR (engine=easyocr)")
+        return _easyocr_read(pil_image)
+    if engine != "tesseract":
+        raise ValueError(f"unknown OCR engine: {engine} (use one of {SUPPORTED_ENGINES})")
+
+    logger.debug("running OCR (engine=tesseract, lang={})", lang)
     return pytesseract.image_to_string(pil_image, lang=lang)
 
 
-def extract_text_from_pdf(pdf_path: str | Path, lang: str = DEFAULT_LANG, dpi: int = 300) -> str:
+def extract_text_from_pdf(
+    pdf_path: str | Path, lang: str = DEFAULT_LANG, dpi: int = 300, engine: str | None = None
+) -> str:
     """Extract text from every page of a PDF and join the results."""
     from pdf2image import convert_from_path
 
@@ -69,22 +106,22 @@ def extract_text_from_pdf(pdf_path: str | Path, lang: str = DEFAULT_LANG, dpi: i
     if not pdf_path.exists():
         raise FileNotFoundError(f"no such pdf: {pdf_path}")
 
-    print(f"converting pdf to images (dpi={dpi}): {pdf_path}")
+    logger.debug("converting pdf to images (dpi={}): {}", dpi, pdf_path)
     pages = convert_from_path(str(pdf_path), dpi=dpi, poppler_path=_get_poppler_path())
 
-    page_texts = [extract_text_from_image(page, lang=lang) for page in pages]
+    page_texts = [extract_text_from_image(page, lang=lang, engine=engine) for page in pages]
     return "\n\n".join(page_texts)
 
 
-def extract_text(file_path: str | Path, lang: str = DEFAULT_LANG) -> str:
+def extract_text(file_path: str | Path, lang: str = DEFAULT_LANG, engine: str | None = None) -> str:
     file_path = Path(file_path)
     if not file_path.exists():
         raise FileNotFoundError(f"{file_path} doesn't exist")
 
     suffix = file_path.suffix.lower()
     if suffix in _PDF_EXTENSIONS:
-        return extract_text_from_pdf(file_path, lang=lang)
+        return extract_text_from_pdf(file_path, lang=lang, engine=engine)
     if suffix in _IMAGE_EXTENSIONS:
-        return extract_text_from_image(file_path, lang=lang)
+        return extract_text_from_image(file_path, lang=lang, engine=engine)
 
     raise ValueError(f"can't handle files of type {suffix}")
