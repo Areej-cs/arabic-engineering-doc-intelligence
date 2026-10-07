@@ -11,6 +11,8 @@ text out of scanned images and PDFs, then uses a fine-tuned Arabic language mode
 urgent each report is (`Urgent` / `Normal` / `Low`), so teams can triage a backlog of reports
 without reading every one by hand.
 
+![Dashboard: OCR output and priority classification](docs/images/dashboard.png)
+
 ## Features
 
 - **OCR extraction** — pulls mixed Arabic/English text out of images and PDFs using
