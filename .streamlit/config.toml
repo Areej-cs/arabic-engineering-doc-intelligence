@@ -1,0 +1,3 @@
+[server]
+# Keep in sync with MAX_UPLOAD_MB on the API side.
+maxUploadSize = 15
