@@ -1,0 +1,53 @@
+# docker compose up --build
+# dashboard: http://localhost:8501   api docs: http://localhost:8000/docs
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-adi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adi-local-password}
+      POSTGRES_DB: ${POSTGRES_DB:-arabic_doc_intel}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-adi} -d ${POSTGRES_DB:-arabic_doc_intel}"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: .
+    image: arabic-doc-intel
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-adi}:${POSTGRES_PASSWORD:-adi-local-password}@db:5432/${POSTGRES_DB:-arabic_doc_intel}
+      # local or s3
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
+      AWS_REGION: ${AWS_REGION:-me-south-1}
+    volumes:
+      - uploads:/app/data/uploads
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    image: arabic-doc-intel
+    depends_on:
+      - api
+    command: ["streamlit", "run", "app/main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    environment:
+      # dashboard goes through the api so the model is only loaded once
+      STREAMLIT_MODE: api
+      STREAMLIT_API_BASE_URL: http://api:8000/api/v1
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:

@@ -14,8 +14,13 @@ from torch import nn
 
 
 def train_head(
-    epochs: int = 30, lr: float = 1e-3, samples_per_label: int = 80, val_split: float = 0.2
+    epochs: int = 30,
+    lr: float = 1e-3,
+    samples_per_label: int = 80,
+    val_split: float = 0.2,
+    seed: int = 42,
 ) -> ClassificationHead:
+    torch.manual_seed(seed)
     texts, labels = generate_dataset(samples_per_label=samples_per_label)
     label_to_index = {label: i for i, label in enumerate(LABELS)}
     targets = torch.tensor([label_to_index[label] for label in labels])
@@ -46,7 +51,10 @@ def train_head(
                 val_accuracy = (head(val_x).argmax(dim=-1) == val_y).float().mean().item()
             logger.info(
                 "epoch {}/{} - train_loss={:.4f} val_accuracy={:.2%}",
-                epoch, epochs, loss.item(), val_accuracy,
+                epoch,
+                epochs,
+                loss.item(),
+                val_accuracy,
             )
 
     save_head(head)
