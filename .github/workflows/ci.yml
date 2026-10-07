@@ -18,10 +18,32 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: |
+          pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements-dev.txt
 
       - name: Lint
         run: ruff check .
 
       - name: Run tests
         run: pytest -q
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t arabic-doc-intel .
+
+      - name: Smoke test (OCR + AraBERT in the image)
+        run: |
+          docker run --rm arabic-doc-intel python -c "
+          from src.app.ocr.sample_generator import generate_sample_image
+          from src.app.services.pipeline import process_file
+          from pathlib import Path
+          p = Path('/tmp/sample.png'); generate_sample_image(p)
+          r = process_file(p)
+          print(r.priority); assert r.text.strip() and r.priority
+          "
