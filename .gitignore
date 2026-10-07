@@ -71,5 +71,6 @@ deployment/aws/terraform/.terraform.lock.hcl
 *.log
 logs/
 
-# Docker
-.dockerignore
+# Local runtime files
+*.db
+data/uploads/
