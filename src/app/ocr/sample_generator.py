@@ -4,7 +4,7 @@ from pathlib import Path
 
 import arabic_reshaper
 from bidi.algorithm import get_display
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, features
 
 DEFAULT_SAMPLE_PATH = (
     Path(__file__).resolve().parents[3] / "data" / "samples" / "sample_engineering_doc.png"
@@ -13,6 +13,9 @@ DEFAULT_SAMPLE_PATH = (
 _FONT_CANDIDATES = [
     r"C:\Windows\Fonts\arial.ttf",
     r"C:\Windows\Fonts\tahoma.ttf",
+    # linux / docker
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf",
 ]
 
 _LINES = [
@@ -28,13 +31,17 @@ def _load_font(size: int) -> ImageFont.FreeTypeFont:
     for font_path in _FONT_CANDIDATES:
         if Path(font_path).exists():
             return ImageFont.truetype(font_path, size)
-    raise FileNotFoundError(
-        f"No Arabic-capable font found among: {_FONT_CANDIDATES}"
-    )
+    raise FileNotFoundError(f"No Arabic-capable font found among: {_FONT_CANDIDATES}")
 
 
 def _render_line(line: str) -> str:
-    """Shape and reorder Arabic text so it draws correctly with PIL (no raqm)."""
+    """Shape and reorder Arabic text so it draws correctly with PIL.
+
+    If Pillow has raqm (usually on Linux) it already does this, and doing it twice
+    printed the Arabic backwards.
+    """
+    if features.check("raqm"):
+        return line
     reshaped = arabic_reshaper.reshape(line)
     return get_display(reshaped)
 
