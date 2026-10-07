@@ -1,0 +1,2 @@
+# only needed for OCR_ENGINE=easyocr
+easyocr==1.7.2
